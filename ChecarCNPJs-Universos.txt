@@ -1,0 +1,58 @@
+Sub ListaPalabras()
+Dim cadenas(10000)
+Dim coinc(25084)
+Dim conteo(25084)
+CualVamos = 0
+ColumnaALeer = 9 ' En este caso es I
+CualColumna = 44 ' Columna AR
+
+'Primero extraer todos los CNPJs
+Open "C:\Users\franro04\Documents\VBA\CNPJ.csv" For Input As #1
+cuenta = 0
+Do While Not EOF(1)
+    cuenta = cuenta + 1
+    Line Input #1, cads
+    If Len(cads) < 8 Then
+        limpio = "9898989"
+    Else
+        separ = Split(cads, ".")
+        limpio = ""
+        For Each pedazo In separ
+            limpio = Trim(limpio) & Trim(pedazo)
+        Next
+        limpio = Val(Left(limpio, 8))
+    End If
+    cadenas(cuenta) = limpio
+Loop
+
+
+Close #1
+
+'Leer cada observación en el archivo de los universos
+
+    LastD = Range("B1").End(xlDown).Row
+    For a = 1 To LastD
+        variable = Cells(a, ColumnaALeer).Value
+        'Editarlas primero
+    If Len(variable) < 8 Then
+        limpio = 99999
+    Else
+        separ = Split(variable, ".")
+        limpio = ""
+        For Each pedazo In separ
+            limpio = Trim(limpio) & Trim(pedazo)
+        Next
+        octo = Left(limpio, 8)
+        limpio = Val(octo)
+    
+        For b = 1 To cuenta
+            If Val(cadenas(b)) = Val(limpio) Then
+                Cells(a, CualColumna).Value = "1"
+            End If
+        Next b
+        End If
+
+    Next a
+
+
+End Sub

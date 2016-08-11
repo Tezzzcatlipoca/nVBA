@@ -1,0 +1,77 @@
+Function ModifQuiebra()
+
+Sobreescribir = 1
+CualColumna = 13 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 3 'Dónde están los valores a ser evaluados
+ClaveBuscada = "1" 'Poner aquí factor a ser insertado
+patron1 = "^(?!AS).*CK" 'Aquí va la primera expresión regular
+patron2 = "^[^AS](.*)CK (.*)" '[^(AS)](\d)+-(\d)+ 'Aquí va la segunda expresión regular
+patron3 = "^[^AS](.*) CK(.*)*" 'Aquí va la tercera expresión regular
+patron4 = "^[^AS](.*) CK (.*)"  'Aquí va la tercera expresión regular'   Combinaciones posibles
+' "[^\+]*CE(.*)\+(.*)RN[^\+]*", "[^\+]*RN(.*)\+(.*)CE[^\+]*",
+' "[^\+]*(CEAR|Cear|cear)(.*)\+(.*)(NORTE|norte|Norte)[^\+]*"
+' "(CEAR|Cear|cear)" Utilizar varias formas de escribir lo mismo
+' Omitir caracteres especiales o usar "?" "Maranh?o"
+' \d any digit
+' \D any NON-digit
+' \( paréntesis
+' \n la expresión anterior equis número de veces
+' \w cualquier caracter de palabra [a-zA-Z_0-9]
+' [xyz] cualquier caracter de estos (OR)
+' [^xyz] ninguno de estos
+' \s cualquier caracter de espacio
+' ? cero o una vez. Equivale a {0,1}
+' * cero o muchas. Equivale a {0,}
+' + una o muchas. Equivale a {1,}
+'
+
+
+Dim regEx1 As New RegExp
+Dim regEx2 As New RegExp
+Dim regEx3 As New RegExp
+Dim regEx4 As New RegExp
+With regEx1
+    .Global = True
+    .MultiLine = True
+    .IgnoreCase = True
+    .Pattern = patron1
+End With
+With regEx2
+    .Global = True
+    .MultiLine = True
+    .IgnoreCase = True
+    .Pattern = patron2
+End With
+With regEx3
+    .Global = True
+    .MultiLine = True
+    .IgnoreCase = True
+    .Pattern = patron3
+End With
+With regEx4
+    .Global = True
+    .MultiLine = True
+    .IgnoreCase = True
+    .Pattern = patron4
+End With
+
+LastD = Range("D1").End(xlDown).Row
+
+For a = 1 To LastD
+    variable = Cells(a, ColumnaALeer).Value
+    If (regEx1.Test(variable) And (regEx2.Test(variable) And (regEx3.Test(variable) And regEx4.Test(variable)))) And Cells(a, CualColumna).Value <> "" And Sobreescribir = 0 Then
+        MsgBox ("Error en tu código!!!")
+        End
+    End If
+    If regEx1.Test(variable) Then Cells(a, CualColumna).Value = ClaveBuscada
+    If regEx2.Test(variable) Then Cells(a, CualColumna).Value = ClaveBuscada
+    If regEx3.Test(variable) Then Cells(a, CualColumna).Value = ClaveBuscada
+    If regEx4.Test(variable) Then Cells(a, CualColumna).Value = ClaveBuscada
+
+Next
+
+
+
+End Function
+
+

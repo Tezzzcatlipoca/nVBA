@@ -1,0 +1,17 @@
+PD
+50(.*)\+
+10(.*)-(.*)19
+5(.*)-(.*)9
+1(.*)-(.*)4
+20(.*)-(.*)49
+Conv
+TD
+BAR[^CK]
+HRC
+Farm
+Perf
+Pet 
+asdasd
+Cash &
+PAD
+TRAD

@@ -1,0 +1,85 @@
+Function adentro(uno, dos)
+adentro = False
+uno = cleano(uno)
+dos = cleano(dos)
+uno = LCase(uno)
+dos = LCase(dos)
+
+
+' Primero ver si son iguales (lcase)
+If uno = dos Then
+    adentro = True
+    GoTo Final
+End If
+
+' Después ver si el menor está contenido en el mayor
+If Len(uno) < Len(dos) Then
+    menor = uno
+    mayor = dos
+Else
+    mayor = uno
+    menor = dos
+End If
+
+If UBound(Split(mayor, menor)) > 0 Then
+    adentro = True
+    GoTo Final
+End If
+
+' Después dividir el menor en palabras y ver si están contenidas en el mayor
+pals = Split(menor, " ")
+Total = 0
+For Each pal In pals
+    If UBound(Split(mayor, pal)) > 0 Then
+        Total = Total + 1
+    End If
+Next
+If Total > 0 Then
+    adentro = True
+    GoTo Final
+End If
+
+' Después ver si el mayor tiene palabras contenidas en el menor
+pals = Split(mayor, " ")
+Total = 0
+For Each pal In pals
+    If UBound(Split(menor, pal)) > 0 Then
+        Total = Total + 1
+    End If
+Next
+If Total > 0 Then
+    adentro = True
+    GoTo Final
+End If
+
+
+
+Final:
+
+End Function
+
+Function cleano(inputo)
+
+cleano = inputo
+For a = 1 To Len(cleano)
+    If Mid(cleano, a, 1) = "%" Then Mid(cleano, a, 1) = " "
+    If Mid(cleano, a, 1) = "á" Then Mid(cleano, a, 1) = "a"
+    If Mid(cleano, a, 1) = "ã" Then Mid(cleano, a, 1) = "a"
+    If Mid(cleano, a, 1) = "Ã" Then Mid(cleano, a, 1) = "A"
+    If Mid(cleano, a, 1) = "Á" Then Mid(cleano, a, 1) = "A"
+    If Mid(cleano, a, 1) = "É" Then Mid(cleano, a, 1) = "E"
+    If Mid(cleano, a, 1) = "é" Then Mid(cleano, a, 1) = "e"
+    If Mid(cleano, a, 1) = "Í" Then Mid(cleano, a, 1) = "I"
+    If Mid(cleano, a, 1) = "í" Then Mid(cleano, a, 1) = "i"
+    If Mid(cleano, a, 1) = "Ó" Then Mid(cleano, a, 1) = "O"
+    If Mid(cleano, a, 1) = "ó" Then Mid(cleano, a, 1) = "o"
+    If Mid(cleano, a, 1) = "Ú" Then Mid(cleano, a, 1) = "U"
+    If Mid(cleano, a, 1) = "ú" Then Mid(cleano, a, 1) = "u"
+    If Mid(cleano, a, 1) = "ç" Then Mid(cleano, a, 1) = "c"
+    If Mid(cleano, a, 1) = "Ç" Then Mid(cleano, a, 1) = "C"
+    If Mid(cleano, a, 1) = "â" Then Mid(cleano, a, 1) = "a"
+    If Mid(cleano, a, 1) = "Â" Then Mid(cleano, a, 1) = "A"
+Next a
+
+End Function
+

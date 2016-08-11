@@ -1,0 +1,94 @@
+Sub traducelas()
+
+ColumnaALeer = 2 'Equivale a Columna B
+
+LastD = Range("A1").End(xlDown).Row
+'wb = ActiveWorkbook.Sheets(5)
+
+For a = 2 To LastD
+    variable = Cells(a, ColumnaALeer).Value
+    variable = ";" & Trim(variable)
+    RIE = GEstado(variable, "SI.rie_split")
+    RIE = Replace(RIE, "_", " ")
+    RIE = Trim(RIE)
+    'MsgBox (variable)
+    Cells(a, 3).Value = RIE
+Next a
+
+
+End Sub
+
+
+Function GEstado(Textos, CLAVE)
+'Esta función devuelve el valor (o valores) reportados para una variable específica, dentro de una
+'cadena de texto.
+
+Dim result(10)
+
+partes = Split(Textos, CLAVE) 'Esta siempre aparecerá, porque ya checamos con un InStr
+prox = Left(partes(1), 9) 'Aquí no sabemos si hay NOT o IN, saco los dígitos más cercanos a la variable
+
+'Checar Signos de IGUAL =======
+donde = InStr(prox, "=")
+If donde > 0 Then 'Si hay signo de Igual próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - donde)
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del signo de igual (=) porque puede haber muchos
+    palabras = Split(despIgual, " ")
+    digitos = palabras(0)
+    GoTo Devolver
+End If
+
+'Checar EQ =======
+donde = InStr(prox, " EQ ")
+If donde > 0 Then 'Si hay signo de EQ próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - (donde + 3)) 'El 3 va por " EQ "
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del signo de igual (=) porque puede haber muchos
+    palabras = Split(despIgual, " ")
+    digitos = palabras(0)
+    GoTo Devolver
+End If
+
+'Checar NOTs ----------------------
+donde = InStr(prox, "NOT")
+If donde > 0 Then 'Si hay "NOT" próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - (donde + 7)) 'El 7 va por "NOT IN ("
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del paréntesis de cierre ")" porque puede haber varios
+    palabras = Split(despIgual, ")")
+    digitos = "-;" & palabras(0)
+    GoTo Devolver
+End If
+
+'Checar IN -------------------------
+donde = InStr(prox, "IN")
+If donde > 0 Then 'Si hay "IN" próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - (donde + 3)) 'El 3 va por "IN ("
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del paréntesis de cierre ")" porque puede haber varios
+    palabras = Split(despIgual, ")")
+    digitos = palabras(0)
+    GoTo Devolver
+End If
+
+'Checar NE ------------------------
+donde = InStr(prox, " NE ")
+If donde > 0 Then 'Si hay " NE " próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - (donde + 3)) 'El 3 va por " NE "
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del paréntesis de cierre ")" porque puede haber varios
+    palabras = Split(despIgual, " ")
+    digitos = "-;" & palabras(0)
+    GoTo Devolver
+End If
+
+MsgBox ("Error en el Gerador. Revisar!!!")
+b = "b"
+a = b + 1 'Se genera error a propósito con fines de Debugging
+
+Devolver:
+
+GEstado = digitos
+End Function
+

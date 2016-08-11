@@ -1,0 +1,416 @@
+
+Sub ListaPalabras()
+'---------------------Esta sub genera una lista de palabras más comunes -------------------
+Dim coinc(25084)
+Dim conteo(25084)
+CualVamos = 0
+ColumnaALeer = 2 ' En este caso es B
+
+
+    LastD = Range("B1").End(xlDown).Row
+    For a = 1 To LastD
+        variable = Cells(a, ColumnaALeer).Value
+        palabras = Split(variable)
+        For Each bito In palabras
+            If bit = " " Then GoTo skipo
+            Si = YaEsta(coinc, CualVamos, bito)
+            Select Case Si
+                Case Is > 0: conteo(Si) = conteo(Si) + 1: GoTo skipo
+                Case Else: CualVamos = CualVamos + 1: coinc(CualVamos) = bito: conteo(CualVamos) = 1
+            End Select
+skipo:
+        Next bito
+        
+    Next a
+
+    Open "C:\Users\franro04\Documents\VBA\PalCads.csv" For Output As #1
+        For a = 1 To CualVamos
+            linea = coinc(a) & "," & conteo(a)
+            Print #1, linea
+        Next a
+    Close #1
+
+End Sub
+Function YaEsta(coinc, CualVamos, bito)
+'------------------------Confirma si ya se leyó determinado texto ----------------------
+valor = 0
+    For b = 1 To CualVamos
+        If bito = coinc(b) Then
+                valor = b
+                Exit For
+        End If
+    Next b
+YaEsta = valor
+End Function
+
+
+Function StatDel(x As Variant)
+    PathS = "C:\Users\franro04\Documents\VBA\Stats.txt"
+    If x <> "" And Dir(PathS) <> "" Then
+        Kill (PathS)
+        Open PathS For Output As #4
+            Print #4, Str(x)
+        Close #4
+    ElseIf x = "" And Dir(PathS) = "" Then
+        StatDel = 0
+    ElseIf x = "" And Dir(PathS) <> "" Then
+        Open PathS For Input As #4
+            Input #4, y
+        Close #4
+        StatDel = Val(y)
+    ElseIf x <> "" And Dir(PathS) = "" Then
+        Open PathS For Output As #4
+            Print #4, x
+        Close #4
+    End If
+'If Dir("C:\Users\franro04\Documents\VBA\Stats.txt") <> "" Then
+'    Open "C:\Users\franro04\Documents\VBA\Stats.txt" For Input As #4
+'    Input #4, y
+'    Close #4
+'    StatDel = y
+'ElseIf x = "" And Dir("C:\Users\franro04\Documents\VBA\Stats.txt") = "" Then
+'    StatDel = "NADA"
+End Function
+'Private cacheE As Variant
+'Private cacheS As Variant
+
+Function EstCuales(x As Variant)
+    PathE = "C:\Users\franro04\Documents\VBA\EstCuales.txt"
+    If x <> "" And Dir(PathE) <> "" Then
+        Kill (PathE)
+        Open PathE For Output As #4
+            Print #4, x
+        Close #4
+    ElseIf x = "" And Dir(PathE) = "" Then
+        EstCuales = ""
+    ElseIf x = "" And Dir(PathE) <> "" Then
+        Open PathE For Input As #4
+            Input #4, y
+        Close #4
+        EstCuales = y
+    ElseIf x <> "" And Dir(PathE) = "" Then
+        Open PathE For Output As #4
+            Print #4, x
+        Close #4
+    End If
+'    If Dir("C:\Users\franro04\Documents\VBA\EstCuales.txt") <> "" Then Kill "C:\Users\franro04\Documents\VBA\EstCuales.txt"
+'    Open "C:\Users\franro04\Documents\VBA\EstCuales.txt" For Output As #4
+'    MsgBox ("Escribiendo 2")
+'    Print #4, x
+'    Close #4
+End Function
+
+
+Sub moreless()
+'-----------------------------------------------------------------------------------
+'-------------------------------- MÓDULO INICIAL -----------------------------------
+'-----------------------------------------------------------------------------------
+Dim cadena(1000)
+Dim numcadena(1000)
+
+ColumnaALeer = 7 'Columna G : Nome
+CualColumna = 61 'Columna BI
+
+' Extract chain names from file
+Open "C:\Users\franro04\Documents\VBA\Cadenas.csv" For Input As #2
+linea = 0
+Do While Not EOF(2)
+    linea = linea + 1
+    Input #2, cadena(linea)
+    cadena(linea) = LCase(cadena(linea))
+Loop
+Close #2
+
+'Extract Chain name dictionary
+Open "C:\Users\franro04\Documents\VBA\NumCadenas.csv" For Input As #3
+linea = 0
+Do While Not EOF(3)
+    linea = linea + 1
+    Input #3, numcadena(linea)
+Loop
+Close #3
+
+
+'Verify spreadsheet, row by row
+    LastD = Range("B1").End(xlDown).Row
+        For a = 1 To LastD
+            variable = Cells(a, ColumnaALeer).Value
+            largo = Len(variable)
+            'variable = FiltroComunes(variable)
+            variable = LCase(variable)
+            calif = evalua(variable, cadena, linea)
+            califped = Split(calif, ":")
+            Z = 0
+            For Each comcad In califped
+               If Z = 0 Then NCadena = comcad Else NPuntos = Val(comcad)
+               Z = Z + 1
+            Next comcad
+            If NPuntos > 0 Then
+                Cells(a, CualColumna).Value = numcadena(NCadena)
+                If largo = 0 Then largo = 1
+                Cells(a, CualColumna + 1).Value = NPuntos / largo
+            End If
+        Next a
+
+x = StatDel("")
+y = EstCuales("")
+MsgBox ("Se borraron " & x & " coincidencias. Y éstas fueron: " & y)
+
+End Sub
+
+Function evalua(variable, cadena, linea)
+
+'Initialise important variable
+Dim coincidencias(1000)
+For a = 1 To 1000
+        coincidencias(a) = 0
+Next a
+
+'Evaluate for coincidences
+largo = Len(variable)
+palabras = Split(variable)
+marcador = ""
+'First, evaluate whole string vs. complete chain name
+result = igual(variable, cadena, linea)
+If result <> "" Then GoTo resumelos
+    'If no equivalence found, verify by parts
+    For Each bito In palabras
+        If Len(bito) < 5 Then
+            result = igual(bito, cadena, linea)
+        Else
+            result = contiene(bito, cadena, linea)
+        End If
+        
+        If result <> "" And marcador = "" Then
+            marcador = result
+        ElseIf result <> "" And marcador <> "" Then
+            marcador = marcador & "-" & result
+        End If
+    Next bito
+
+resumelos:
+'Resumen de puntos
+componentes = Split(marcador, "-")
+cuentalos = 0
+   For Each pedazo In componentes
+       cuentalos = cuentalos + 1
+       lugar = InStr(1, pedazo, ":")
+       numstr = Left(pedazo, lugar - 1)
+       cadenita = Val(numstr)
+       puntosstr = Right(pedazo, Len(pedazo) - lugar)
+       puntos = Val(puntosstr)
+       Select Case comunes(coincidencias(cadenita), puntos) '¿¿Alguna de las 2 es una palabra común???
+            Case "NA": Nada = True
+            Case "+": coincidencias(cadenita) = coincidencias(cadenita) + puntos 'Aquí se suman
+            Case "P": coincidencias(cadenita) = coincidencias(cadenita) + puntos - 0.5 'Aquí se suman y emparejan
+       End Select
+   Next pedazo
+   
+'Delete all those values which are still .5 (which means that they are only common words)
+For a = 1 To 1000
+    If coincidencias(a) <> Round(coincidencias(a)) Then
+        coincidencias(a) = 0
+        yyy = StatDel("") + 1
+        StatDel (yyy)
+    End If
+Next a
+
+'Choose the chain with the highest score -What is it most similar to??
+Record = 0
+    For a = 1 To 1000
+        suma = coincidencias(a)
+        If suma > Record Then
+            Record = suma
+            numcadena = a
+        End If
+    Next a
+
+'Send the record in proper format
+If Record > 0 Then
+    devuelve = Trim(Str(numcadena)) & ":" & Trim(Str(Record))
+    evalua = devuelve
+Else
+    evalua = "0:0"
+End If
+End Function
+
+Function comunes(valor1, valor2)
+'Determinar si alguna de las dos palabras es común, y comunicar qué hacer ahora
+Select Case valor1
+    Case 0: v1 = 0
+    Case Is <> Round(valor1): v1 = 0.5
+    Case Else: v1 = 1
+End Select
+Select Case valor2
+    Case 0: v2 = 0
+    Case Is <> Round(valor2): v2 = 0.5
+    Case Else: v2 = 1
+End Select
+
+If v1 = 0 And v2 = 0 Then comunes = "NA" 'Ok
+If v1 = 0 And v2 = 0.5 Then comunes = "+" 'Ok
+If v1 = 0 And v2 = 1 Then comunes = "+" 'Ok
+If v1 = 0.5 And v2 = 0 Then comunes = "NA" 'Ok
+If v1 = 0.5 And v2 = 0.5 Then comunes = "+" 'Ok
+If v1 = 0.5 And v2 = 1 Then comunes = "P" 'Ok
+If v1 = 1 And v2 = 0 Then comunes = "NA" 'Ok
+If v1 = 1 And v2 = 0.5 Then comunes = "P" 'Ok
+If v1 = 1 And v2 = 1 Then comunes = "+" 'Ok
+
+End Function
+
+
+Function igual(bito, cadena, linea)
+'Revisa si hay una equivalencia total
+
+    Resultado = ""
+    For a = 1 To linea
+        If cadena(a) = bito Then
+            ajustar = SonComunes(bito)
+            Resultado = Resultado & Trim(Str(a)) & ":" & Trim(Str(Len(bito) + (0.5 * ajustar))) & "-"
+        End If
+    Next a
+If Len(Resultado) > 1 And Right(Resultado, 1) = "-" Then Resultado = Left(Resultado, Len(Resultado) - 1)
+igual = Resultado
+End Function
+
+
+Function contiene(bito, cadena, linea)
+'Revisa si hay una equivalencia parcial
+
+Dim regEx1 As New RegExp
+
+With regEx1
+    .Global = True
+    .MultiLine = True
+    .IgnoreCase = True
+End With
+
+    Resultado = ""
+    For a = 1 To linea
+        For b = 1 To Len(bito) - 1
+            nuevobito = Left(bito, b) & "(.?)" & Right(bito, Len(bito) - b)
+            regEx1.Pattern = nuevobito
+            If regEx1.Test(cadena(a)) Then
+                ajustar = 0
+                ajustar = SonComunes(bito)
+                Resultado = Resultado & Trim(Str(a)) & ":" & Trim(Str(Len(bito) + (0.5 * ajustar))) & "-"
+                GoTo sigbito
+            End If
+        Next b
+sigbito:
+    Next a
+If Len(Resultado) > 1 And Right(Resultado, 1) = "-" Then Resultado = Left(Resultado, Len(Resultado) - 1)
+contiene = Resultado
+End Function
+
+
+Function SonComunes(cadena)
+'Nos dice si la cadena contiene palabras comunes
+'-----------------------------------------------------------------------------------------------------
+'-----------------------------------------------------------------------------------------------------
+
+Dim regEx2 As New RegExp
+
+With regEx2
+    .Global = True
+    .MultiLine = True
+    .IgnoreCase = True
+End With
+
+
+cadena = LCase(cadena)
+Dim Palabra(200)
+'Si no se ha bajado la base con las definiciones, se hace ahora
+    If Palabra(2) = "" Then
+        Open "C:\Users\franro04\Documents\VBA\PalsSolo.csv" For Input As #1
+        nume = 0
+        Do While Not EOF(1)
+            nume = nume + 1
+            Input #1, Palabra(nume)
+            Palabra(nume) = LCase(Palabra(nume))
+            If Len(Palabra(nume)) < 4 Then Palabra(nume) = " " & Palabra(nume)
+            Palabra(nume) = Palabra(nume) & " "
+        Loop
+        Close #1
+    End If
+    
+'Revisa si hay coincidencias
+    For a = 1 To nume
+        For b = 1 To Len(cadena) - 1
+        ' -------------------------------------------------------------------
+            nuevobito = Left(cadena, b) & "(.?)" & Right(cadena, Len(cadena) - b)
+            regEx2.Pattern = nuevobito
+            If regEx2.Test(Palabra(a)) Then
+                ccc = 1
+                yyy = EstCuales("") & Palabra(a)
+                Call EstCuales(yyy)
+                Exit For
+            Else
+                ccc = 0
+            End If
+        Next b
+    Next a
+    SonComunes = ccc
+End Function
+
+
+Function barely()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+End Function
+
+Function FiltroComunes(cadena) 'OVERRIDEN!!!!!!!!!!!
+'Busca en una lista de excel (CSV) si hay coincidencias con palabras más comunes, las borra de la cadena
+
+cadena = LCase(cadena)
+Dim Palabra(200)
+    If Palabra(2) = "" Then
+        Open "C:\Users\franro04\Documents\VBA\PalsSolo.csv" For Input As #1
+        nume = 0
+        Do While Not EOF(1)
+            nume = nume + 1
+            Input #1, Palabra(nume)
+            Palabra(nume) = LCase(Palabra(nume))
+            If Len(Palabra(nume)) < 4 Then Palabra(nume) = " " & Palabra(nume)
+            Palabra(nume) = Palabra(nume) & " "
+        Loop
+        Close #1
+    End If
+    For a = 1 To nume
+        cont = InStr(1, cadena, Palabra(a))
+        If cont <> 0 Then
+            partida = Split(cadena, Palabra(a))
+            nueva = ""
+            For Each biit In partida
+                nueva = nueva & biit & " "
+            Next biit
+            cadena = Trim(nueva)
+        End If
+    Next a
+    FiltroComunes = cadena
+End Function
+
+

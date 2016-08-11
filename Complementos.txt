@@ -1,0 +1,352 @@
+Sub Complementos()
+    ColumnaALeer = 3 'Equivale a Columna B
+
+Dim wb As Object
+Dim wbDistr As Object
+
+'La información de Input debe estar en la hoja 1 del archivo de Excel y debe tener el orden especificado en el ciclo For Next más abajo
+
+
+Set act = ActiveWorkbook.Sheets(1)
+If wb Is Nothing Then
+    Set wb = Workbooks.Open("C:\Users\franro04\Documents\Uzyteczne pliki\MUN2013ENH-2016.xlsx")
+End If
+If wbDistr Is Nothing Then
+    Set wbDistr = Workbooks.Open("H:\ESTATIST\PROCESSOS E CLIENTES\Migração Universos entre IVPO-OE E MSci\2014\Ind 51\Enrique\Quebra_SP_RJ.xls")
+End If
+
+LastD = act.Range("A1").End(xlDown).Row
+
+For a = 2 To LastD
+    Area = act.Cells(a, ColumnaALeer).Value
+    Estado = act.Cells(a, ColumnaALeer + 1).Value
+    Municipios = act.Cells(a, ColumnaALeer + 2).Value
+    Splitt = act.Cells(a, ColumnaALeer + 3).Value
+    Split33 = act.Cells(a, ColumnaALeer + 4).Value
+    Pop13 = act.Cells(a, ColumnaALeer + 5).Value
+    Quebra = act.Cells(a, ColumnaALeer + 6).Value
+    Nfranq = act.Cells(a, ColumnaALeer + 7).Value
+    Distr = act.Cells(a, ColumnaALeer + 8).Value
+    Subdistr = act.Cells(a, ColumnaALeer + 9).Value
+    TC2 = act.Cells(a, ColumnaALeer + 10).Value
+    TCRIE = act.Cells(a, ColumnaALeer + 11).Value
+    NKIBON = act.Cells(a, ColumnaALeer + 12).Value
+    'Municipios = ";" & Trim(Municipios)
+    Municipios = Replace(Municipios, ";0000", ";")
+    Municipios = Replace(Municipios, ";000", ";")
+    Municipios = Replace(Municipios, ";00", ";")
+    Municipios = Replace(Municipios, ";0", ";")
+    
+    NewMun = ComplMunic(wb, Area, Estado, Municipios, Splitt, Split33, Pop13, Quebra, Nfranq, Distr, Subdistr, TC2, TCRIE, NKIBON)
+    If Distr <> "" Then
+        NewDistr = ComplDistr(wbDistr, Estado, Distr)
+    End If
+    If Subdistr <> "" Then
+        NewSubdistr = ComplSubDistr(wbDistr, Estado, Subdistr)
+    End If
+    act.Cells(a, ColumnaALeer + 13).Value = NewMun         'Columna M
+    act.Cells(a, ColumnaALeer + 14).Value = NewDistr       'Columna N
+    act.Cells(a, ColumnaALeer + 15).Value = NewSubdistr    'Columna O
+Next a
+
+wb.Close SaveChanges:=False
+wbDistr.Close SaveChanges:=False
+
+MsgBox ("Complementos completos")
+
+End Sub
+Function ComplDistr(wbDistr As Object, Estado, Distr)
+recop = ""
+
+
+ADESTADO = encuentraDist(wbDistr, "ESTADO")
+If ADESTADO = 9999 Then ADESTADO = encuentraDist(wbDistr, "estado")
+ADDISTR = encuentraDist(wbDistr, "DISTRITO")
+ADSUBDISTR = encuentraDist(wbDistr, "subdist")
+
+Total = ADESTADO + ADDISTR + ADSUBDISTR
+If Total > 9998 Then
+    MsgBox ("Error. El archivo de Distritos no contiene una de las variables necesarias.")
+    End
+End If
+LastD = wbDistr.Sheets(1).Range("A1").End(xlDown).Row
+    
+    If Left(Municipios, 1) = "-" Then signo = -1 Else signo = 1
+
+For b = 1 To LastD
+    If Estado <> "" Then
+        ESTMunh = wbDistr.Sheets(1).Cells(b, ADESTADO).Value
+        EST = comp(ESTMunh, Estado)
+    Else
+        EST = 1
+    End If
+    If Distr <> "" Then
+        DISTRMunh = wbDistr.Sheets(1).Cells(b, ADDISTR).Value
+        DST = comp(DISTRMunh, Distr)
+    Else
+        DST = 1
+    End If
+    'If Subdistr <> "" Then
+    '    SUBDISTRMunh = wb.Sheets(1).Cells(b, ADSUBDISTR).Value
+    '    SBDST = comp(SUBDISTRMunh, Subdistr)
+    'Else
+    '    SBDST = 1
+    'End If
+    
+    TODOS = EST + DST '+ SBDST
+
+    'Si hay coincidencia, agregar el distrito
+    If TODOS = 2 Then
+            recop = recop & ";" & DISTRMunh
+    End If
+
+Next b
+
+
+ComplDistr = recop
+
+End Function
+Function ComplSubDistr(wbDistr As Object, Estado, Subdistr)
+recop = ""
+
+
+ADESTADO = encuentraDist(wbDistr, "ESTADO")
+If ADESTADO = 9999 Then ADESTADO = encuentraDist(wbDistr, "estado")
+ADDISTR = encuentraDist(wbDistr, "DISTRITO")
+ADSUBDISTR = encuentraDist(wbDistr, "subdist")
+
+Total = ADESTADO + ADDISTR + ADSUBDISTR
+If Total > 9998 Then
+    MsgBox ("Error. El archivo de Distritos no contiene una de las variables necesarias.")
+    End
+End If
+LastD = wbDistr.Sheets(1).Range("A1").End(xlDown).Row
+    
+    If Left(Municipios, 1) = "-" Then signo = -1 Else signo = 1
+
+For b = 1 To LastD
+    If Estado <> "" Then
+        ESTMunh = wbDistr.Sheets(1).Cells(b, ADESTADO).Value
+        EST = comp(ESTMunh, Estado)
+    Else
+        EST = 1
+    End If
+    'If Distr <> "" Then
+    '    DISTRMunh = wb.Sheets(1).Cells(b, ADDISTR).Value
+    '    DST = comp(DISTRMunh, Distr)
+    'Else
+    '    DST = 1
+    'End If
+    If Subdistr <> "" Then
+        SUBDISTRMunh = wbDistr.Sheets(1).Cells(b, ADSUBDISTR).Value
+        SBDST = comp(SUBDISTRMunh, Subdistr)
+    Else
+        SBDST = 1
+    End If
+    
+    TODOS = EST + SBDST '+ DST
+
+    'Si hay coincidencia, agregar el subdistrito
+    If TODOS = 2 Then
+            recop = recop & ";" & SUBDISTRMunh
+            
+    End If
+
+Next b
+
+
+ComplSubDistr = recop
+
+End Function
+
+
+
+Function ComplMunic(wb As Object, Area, Estado, Municipios, Splitt, Split33, Pop13, Quebra, Nfranq, Distr, Subdistr, TC2, TCRIE, NKIBON)
+'Necesario abrir archivo de MUNH y pasarle control
+'Necesario abrir archivo Distr y Subdistr
+
+recop = ""
+
+ADAREA = encuentra(wb, "AREA")
+ADESTADO = encuentra(wb, "ESTADO")
+ADMUNIC = encuentra(wb, "MUNIC")
+ADSPLIT = encuentra(wb, "SPLIT")
+ADSPLIT33 = encuentra(wb, "split_exp_new_33")
+ADPOP13 = encuentra(wb, "pop13")
+ADQUEBRA = encuentra(wb, "QUEBRAS")
+ADNFRANQ = encuentra(wb, "NFRANQ")
+ADTC2 = encuentra(wb, "TC2")
+ADTCRIE = encuentra(wb, "TC_rie")
+ADNKIBON = encuentra(wb, "NKIBON")
+
+Total = ADAREA + ADESTADO + ADMUNIC + ADSPLIT + ADSPLIT33 + ADPOP13 + ADQUEBRA + ADNFRANQ + ADTC2 + ADTCRIE + NKIBON
+If Total > 9998 Then
+    MsgBox ("Error. El archivo de MUNH no contiene una de las variables necesarias.")
+    End
+End If
+
+LastD = wb.Sheets(1).Range("A1").End(xlDown).Row
+    
+    If Left(Municipios, 1) = "-" Then signo = -1 Else signo = 1
+
+For b = 1 To LastD
+    If Area <> "" Then
+        AREAMunh = wb.Sheets(1).Cells(b, ADAREA).Value
+        AR = compTC2(AREAMunh, Area)
+    Else
+        AR = 1
+    End If
+    If Estado <> "" Then
+        ESTADOMunh = wb.Sheets(1).Cells(b, ADESTADO).Value
+        EST = comp(ESTADOMunh, Estado)
+    Else
+        ESTADOMunh = wb.Sheets(1).Cells(b, ADESTADO).Value
+        EST = 1
+    End If
+    If Municipios <> "" And Municipios <> " " Then
+        MUNICMunh = wb.Sheets(1).Cells(b, ADMUNIC).Value
+        MUNIC = compMun(MUNICMunh, Municipios, signo)
+    Else
+        MUNICMunh = wb.Sheets(1).Cells(b, ADMUNIC).Value
+        MUNIC = 1
+    End If
+    If Splitt <> "" Then
+        SPLITMunh = wb.Sheets(1).Cells(b, ADSPLIT).Value
+        SPL = compTC2(SPLITMunh, Splitt)
+    Else
+        SPL = 1
+    End If
+    If Split33 <> "" Then
+        SPLIT33Munh = wb.Sheets(1).Cells(b, ADSPLIT33).Value
+        SPL33 = compTC2(SPLIT33Munh, Split33)
+    Else
+        SPL33 = 1
+    End If
+    If Pop13 <> "" Then
+        POP13Munh = wb.Sheets(1).Cells(b, ADPOP13).Value
+        P13 = compTC2(POP13Munh, Pop13)
+    Else
+        P13 = 1
+    End If
+    If Quebra <> "" Then
+        QUEBRAMunh = wb.Sheets(1).Cells(b, ADQUEBRA).Value
+        QB = compTC2(QUEBRAMunh, Quebra)
+    Else
+        QB = 1
+    End If
+    If Nfranq <> "" Then
+        NFRANQMunh = wb.Sheets(1).Cells(b, ADNFRANQ).Value
+        NFQ = compTC2(NFRANQMunh, Nfranq)
+    Else
+        NFQ = 1
+    End If
+    If TC2 <> "" Then  ' THIS PART SHOULD BE DONE DIFFERENTLY, BECAUSE TC2 TYPICALLY CONTAINS MORE THAN ONE VALUE
+        TC2Munh = wb.Sheets(1).Cells(b, ADTC2).Value
+        TC = compTC2(TC2Munh, TC2)
+    Else
+        TC = 1
+    End If
+    If TCRIE <> "" Then  ' THIS PART SHOULD BE DONE DIFFERENTLY, BECAUSE TCRIE TYPICALLY CONTAINS MORE THAN ONE VALUE
+        TCRIEMunh = wb.Sheets(1).Cells(b, ADTCRIE).Value
+        TCR = compTC2(TCRIEMunh, TCRIE)
+    Else
+        TCR = 1
+    End If
+    If NKIBON <> "" Then  ' THIS PART SHOULD BE DONE DIFFERENTLY, BECAUSE TCRIE TYPICALLY CONTAINS MORE THAN ONE VALUE
+        NKIBONMunh = wb.Sheets(1).Cells(b, ADNKIBON).Value
+        NK = compTC2(NKIBONMunh, NKIBON)
+    Else
+        NK = 1
+    End If
+    
+    TODOS = AR + EST + MUNIC + SPL + SPL33 + P13 + QB + NFQ + TC + TCR + NK
+    
+    'Si hay coincidencia, agregar el municipio
+    If TODOS = 11 Then
+            recop = recop & ";" & Trim(formatos(ESTADOMunh, 2)) & formatos(MUNICMunh, 4)
+    End If
+    
+Next b
+
+
+ComplMunic = recop
+End Function
+
+Function comp(var1, var2)
+
+    If var1 = var2 Then comp = 1 Else comp = 0
+
+
+End Function
+
+Function compTC2(var1, Varias)
+
+var11 = ";" & Trim(var1) & ";"
+Varias2 = ";" & Trim(Varias) & ";"
+
+If InStr(Varias2, var11) > 0 Then compTC2 = 1 Else compTC2 = 0
+
+End Function
+
+Function compMun(var1, Cadena, signo)
+    Cad = ";" & Cadena & ";"
+    var11 = ";" & Trim(var1) & ";"
+    
+    Select Case signo
+        Case -1: If InStr(Cad, var11) > 0 Then compMun = 0 Else compMun = 1
+        Case 1: If InStr(Cad, var11) > 0 Then compMun = 1 Else compMun = 0
+        Case Else: MsgBox ("Error en signo!!"): bbb = "b": ccc = bbb + 1 'Generar error
+    End Select
+    
+
+End Function
+Function encuentra(wb As Object, texto)
+For a = 1 To 100
+
+    If texto = wb.Sheets(1).Cells(1, a).Value Then
+        encuentra = a
+        GoTo salir
+    End If
+Next a
+
+encuentra = 9999
+
+salir:
+
+End Function
+
+Function encuentraDist(wbDistr As Object, texto)
+
+For a = 1 To 100
+
+    If texto = wbDistr.Sheets(1).Cells(1, a).Value Then
+        encuentraDist = a
+        GoTo salir
+    End If
+Next a
+
+encuentraDist = 9999
+
+salir:
+
+End Function
+
+Function formatos(texto, largo)
+If VarType(texto) <> vbString Then
+    nuevo = Str(texto)
+End If
+
+nuevo = "00000000000" & Trim(nuevo)
+
+formatos = Right(nuevo, largo)
+
+End Function
+
+
+Sub probar()
+
+MsgBox (encuentra("SPLIT"))
+
+
+End Sub
+

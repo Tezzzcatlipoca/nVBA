@@ -1,0 +1,19 @@
+Sub caracteres()
+
+Columna = 2 '2 equals B
+LastAbajo = Range("A1").End(xlDown).Row
+
+For a = 1 To LastAbajo
+    variable = Cells(a, Columna).Value
+    For b = 1 To Len(variable)
+        caract = Mid(variable, b, 1)
+        If Asc(caract) > 126 Then
+            Mid(variable, b, 1) = "-"
+            Cells(a, Columna).Value = variable
+        End If
+    Next b
+
+Next a
+
+
+End Sub

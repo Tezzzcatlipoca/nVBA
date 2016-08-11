@@ -1,0 +1,161 @@
+Acre
+Alagoas
+Amazonas
+Amapá
+Bahia
+Ceará
+Distrito Federal
+Espírito Santo
+Fernando de Noronha
+Goiás
+Maranhão
+Minas Gerais
+Mato Grosso do Sul
+Mato Grosso
+Pará
+Paraíba
+Pernambuco
+Piauí
+Paraná
+Rio de Janeiro
+Rio Grande do Norte
+Rondônia
+Roraima
+Rio Grande do Sul
+Santa Catarina
+Sergipe
+São Paulo
+Tocantins
+INT AC
+INT AL
+INT AM
+INT AP
+INT BA
+INT CE
+Distrito Federal
+INT ES
+INT GO
+INT MA
+INT MG
+MS
+MT
+INT PA
+PB
+INT PE
+INT PI
+INT PR
+RJ
+Dem.RJ
+Dem.Mun.RJ
+Resto.RJ.
+RN
+INT RO
+RS
+INT SE
+São Paulo
+INT SP
+Resto SP
+Tocantins
+Rio Branco
+Maceió
+Manaus
+Macapá
+Salvador
+Fortaleza
+DF
+Vitória
+Pernambuco
+Goiânia
+São Luís
+Belo Horizonte
+Campo Grande
+Cuiabá
+Belém
+João Pessoa
+Recife
+Teresina
+Curitiba
+Rio de Janeiro
+Natal
+Porto Velho
+Boa Vista
+Porto Alegre
+Florianópolis
+Aracaju
+São Paulo
+Palmas
+Aracatuba
+Araraquara
+Bangu
+Bauru
+Beltrao
+Blumenau
+Brasilia
+Campinas
+Campos
+Centro Oeste
+Chapeco
+Claros
+Conquista
+CORAÇOES
+Cosmopolis
+Divinopolis
+Duque
+Fluminense
+Garanhuns
+Goncalo
+Iguacu
+Ilheus
+Iraja
+Itambi
+Itapetininga
+Itapeva
+Jacare
+Joao Pessoa
+Joinville
+Juiz de Fora
+Jundiai
+Leste
+Limeira
+Londrina
+Marilia
+Maringa
+Mogi-Mirim
+Niteroi
+Passos
+Pelotas
+Petrolina
+Pfundo
+Pinda
+Piracicaba
+POA
+Ponta Grossa
+Porto Real
+Portuaria
+Preto
+P.Grossa
+RESTO PR
+Sangelo
+Santana
+Santos
+SAO ROQUE
+SJRP
+Sorocaba
+STA MARIA
+Tatuí
+Tijuca
+Uberlandia
+Valadares
+ABCD
+FARROUPILHA
+Cascavél
+Spal
+Área 1
+Área 2
+Área 3
+Área 4
+Área 5
+Área 6
+Área 7
+Área 8
+Área 9

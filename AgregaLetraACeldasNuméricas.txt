@@ -1,0 +1,23 @@
+Sub AgregaLetras()
+
+'Starting point: 14
+Empieza = 14
+
+LastDerecha = Range("A1").End(xlToRight).Column
+LastAbajo = Range("A1").End(xlDown).Row
+
+For derecha = Empieza To LastDerecha
+    For abajo = 2 To LastAbajo
+        variable = Cells(abajo, derecha).Value
+        'Agregar texto a la variable
+        If variable = 0 Then
+                variable = "NULL"
+            Else
+                variable = "L" & variable
+        End If
+        Cells(abajo, derecha).Value = variable
+    Next abajo
+Next derecha
+
+
+End Sub

@@ -1,0 +1,634 @@
+Sub CeldasABuscar()
+'Sirve para tomar una serie de valores (de celdas) y mandarlas buscar una por una en el subproceso central
+ColumnaALeer = 1 'Equivale a Columna A
+
+LastD = Range("A1").End(xlDown).Row
+
+For a = 2 To LastD
+    variable = Cells(a, ColumnaALeer).Value
+    variable = Str(variable)
+    'If Len(variable) < 5 Then
+    '    variable = "0000000" & Trim(variable)
+    '    variable = Val(Right(variable, 5))
+    'End If
+    variable = Trim(variable)
+
+    If Len(variable) <> 7 Then MsgBox ("Las celdas a consultar deben ser de 7 dígitos e ir codificadas así: Indice & Celda.")
+    
+    'LOG --------------------------------------------------------------
+    Registro = ("var:" & variable & " a: " & a)
+    Call RLog(Registro, "Off")
+    'LOG --------------------------------------------------------------
+    
+    Call Delimitacion(variable)
+Next a
+
+
+End Sub
+
+
+Sub Delimitacion(Celll)
+'SUBPROCESO CENTRAL. SIRVE PARA ENCONTRAR LA DELIMITACIÓN GEOGRÁFICA DE UNA CELDA A LA VEZ
+
+Dim Linea(50000)
+Dim Entradas(50000)
+Dim Salidas(50000)
+Dim regEx1 As New RegExp
+With regEx1
+    .Global = True
+    .MultiLine = True
+    .IgnoreCase = True
+    '.Pattern = patron1 'Dejado así a propósito
+End With
+
+'Celda = 1007 'Aquí va la celda a buscar ----------------
+
+'Separar de la celda sus componentes. En este caso, SEG.
+
+Indice = Left(Trim(Celll), 2)
+Celda = Val(Right(Trim(Celll), Len(Trim(Celll)) - 2))
+
+'LOG --------------------------------------------------------------
+Registro = ("Celll:" & Celll & "Celda:" & Celda & " Indice: " & Indice)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+
+Select Case Indice
+    Case 21:    SEG = Left(Celda, Len(Celda) - 1)
+    Case 27:    SEG = Left(Celda, Len(Celda) - 1)
+    Case 33:    SEG = Left(Celda, Len(Celda) - 1)
+    Case 44:    SEG = Left(Celda, Len(Celda) - 1): SEG = Right(SEG, 2)
+    Case 51:    SEG = Left(Celda, Len(Celda) - 1)
+    Case 84:    SEG = Left(Celda, Len(Celda) - 1): SEG = Right(SEG, 2)
+    Case Else: MsgBox ("Indice " & Indice & " no cubierto!!!")
+End Select
+
+
+'LOG --------------------------------------------------------------
+Registro = ("SEG:" & SEG)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+'    If Celll = 258 Then
+'        MsgBox (Celda): bbb = "b": ccc = 1 + bbb
+'    End If
+
+'Leer el programa Gerador Puro
+Gerador = "C:\Users\franro04\Documents\SAS\GeradorPuro" & Indice & ".txt"
+If renglon <> "" Then GoTo Leido 'Evitar releer archivo si sigue en memoria
+Open Gerador For Input As #1
+renglon = 0
+Do While Not EOF(1)
+    renglon = renglon + 1
+    Line Input #1, Linea(renglon)
+
+Loop
+Close #1
+
+Leido:
+'Sacar los componentes de entrada y salida de cada linea del programa gerador
+For a = 1 To renglon
+    If InStr(Linea(a), "THEN") > 0 Then
+        partes = Split(Linea(a), "THEN")
+        Entradas(a) = Limpiar(partes(0))
+        Salidas(a) = Limpiar(partes(1))
+        'MsgBox ("Ent:" & Entradas(a))
+        'MsgBox ("Sal:" & Salidas(a))
+    Else
+        Entradas(a) = ""
+        Salidas(a) = ""
+    End If
+Next a
+Flaga = 0 ' Variable que determina si hubo una coincidencia
+
+'Buscar el SEG dentro de las líneas
+For b = 1 To renglon
+    regEx1.Pattern = "(.*)SEG(\s*)=(\D*)" & Trim(Str(SEG)) & "(\D*)"
+    'MsgBox (regEx1.Pattern & " - " & Salidas(b))
+    Encontre = ""
+    
+    'Si empieza un ciclo, guardar el SEG correspondiente
+    'If InStr(Salidas(b), " DO;") > 0 And InStr(Entradas(b), "SEG") > 0 Then
+       ' Previo = SinComas(GEstado(Entradas(b), "SEG")) 'Si hay THEN DO; extraer el valor de IF SEG=X
+       ' Ahora, en vez de extraer el valor de SEG desde aquí, sólo identificamos si hay
+       ' variables útiles. Eventualmente extraemos los valores.
+    If InStr(Salidas(b), " DO;") > 0 And LasBuenas(Entradas(b)) > 0 Then
+    
+    'LOG --------------------------------------------------------------
+    Registro = ("CODECHUNK DO;")
+    Call RLog(Registro, "Off")
+    'LOG --------------------------------------------------------------
+       Previo = Entradas(b)
+    End If
+    
+    'Si termina un ciclo, borrar el SEG correspondiente
+    If InStr(Entradas(b), "END;") > 0 And Previo <> "" Then
+        Previo = ""
+    'Si la salida contiene SEG y el número buscado, entonces sacar las Entradas
+    'LOG --------------------------------------------------------------
+    Registro = ("CODECHUNK DO BORRADO por END")
+    Call RLog(Registro, "Off")
+    'LOG --------------------------------------------------------------
+    End If
+    
+    If regEx1.Test(Salidas(b)) Then
+        'LOG --------------------------------------------------------------
+        Registro = ("Coincidencia Exp Reg1-SEG: " & SEG)
+        Call RLog(Registro, "Off")
+        'LOG --------------------------------------------------------------
+        'MsgBox (Entradas(b))
+        Flaga = 1
+        Encontre = Entradas(b) 'Encontre = INPUT para generar SEG
+        Geogr = JuzgarCaso(Encontre, Celda, Previo) 'Buscar si hay datos geográficos
+        'LOG --------------------------------------------------------------
+        Registro = ("LEN(Geogr):" & Len(Geogr))
+        Call RLog(Registro, "Off")
+        'LOG --------------------------------------------------------------
+        Select Case Len(Geogr) 'Si se devuelve una cadena, sí hay datos, sino no
+            Case 0: ya = SEGenSEG(Encontre, SEG) 'Mandar a buscar en caso especial y lo que devuelva, mandarlo otra vez al flujo normal
+                    'LOG --------------------------------------------------------------
+                    Registro = ("SEGenSEG-ya:" & ya)
+                    Call RLog(Registro, "Off")
+                    'LOG --------------------------------------------------------------
+                    'Si devuelve un valor, hay que buscarlo en outputs, sino, hay que tomar el "Previo" y buscarlo
+                    respuesta = NuevaBusqueda(Entradas, Salidas, renglon, ya, Previo, Celda)
+                    If respuesta <> "" Then
+                        'LOG --------------------------------------------------------------
+                        Registro = ("NuevaBusqueda returned: " & respuesta & ". Procede salir del ciclo de busqueda.")
+                        Call RLog(Registro, "Off")
+                        'LOG --------------------------------------------------------------
+                        GoTo salir
+                    End If
+            Case Else: 'Ya encontramos variables geográficas
+                        'LOG --------------------------------------------------------------
+                        Registro = ("Len(Geogr)=0. Procede salir del ciclo de busqueda.")
+                        Call RLog(Registro, "Off")
+                        'LOG --------------------------------------------------------------
+                    GoTo salir:
+        End Select
+    End If
+
+Next b
+
+salir:
+If Flaga = 0 Then   'No hay otro procedimiento para dejar registro cuando nadie encontró nada
+Open "C:\Users\franro04\Documents\VBA\ResultGeogr.csv" For Append As #2
+        'If Celda = 258 Then
+        '    MsgBox (Celda): bbb = "b": ccc = 1 + bbb
+        'End If
+    
+        Impresion = Celda & ",99,99,99,99,99,99,99,99,99,99,99,Previo:" & Previo & ",No se encontro en ningun lado." 'Código que significa ERROR
+                                'LOG --------------------------------------------------------------
+                        Registro = ("REGISTRO por Flaga 0. Impresión: " & Impresion)
+                        Call RLog(Registro, "Off")
+                        'LOG --------------------------------------------------------------
+        Print #2, Impresion
+    Close #2
+End If
+End Sub
+
+Function NuevaBusqueda(Entradas, Salidas, renglon, ya, Previo, Celda)
+'Esta función vuelve a buscar en OUTPUT desde el primer renglón los valores de SEG sacados de INPUT
+SEG = Left(Celda, Len(Celda) - 1)
+
+
+
+'Aquí agregar la posibilidad de buscar otras variables, además de SEG -------------------------------------------
+' ------------------------------------------------------------------------------------------------------------
+
+If ya <> "" Then
+
+'LOG --------------------------------------------------------------
+Registro = ("Corriendo NuevaBusqueda. Variable YA contiene valor para SEG.")
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+
+    mensaje = BuscaSeg(Entradas, Salidas, renglon, ya, Previo, Celda, "SEG")
+
+'LOG --------------------------------------------------------------
+Registro = ("Se corrió BuscaSeg. Devolvió el mensaje: " & mensaje)
+Call RLog(Registro, "Off")
+'LOG ------------------------------------------------------------
+
+
+'Si no hay variables anteriores ni evidencias de SEG para seguir buscando más atrás, registrar error.
+ElseIf ya = "" And Previo <> "" Then 'Hay info valiosa en Previo. Hay que saber si es geográfica o no
+                                    'De ser geográfica se registra. De lo contrario se busca NKIBON
+    'LOG --------------------------------------------------------------
+Registro = ("Ya no contiene valor de SEG, pero Previo tiene contenido. Evaluando...")
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+    Select Case LasBuenas(Previo)
+        Case 1 To 4: Call RLog("Previo contiene variables geograficas. Llamando JuzgarCaso.", "Off"): mensaje = JuzgarCaso(Previo, Celda, Previo): GoTo Vuelta
+        Case 5: Call RLog("Previo contiene variable de SEG. Llamando BuscaSeg.", "Off"): varEnc = " SEG ": mensaje = BuscaSeg(Entradas, Salidas, renglon, ya, Previo, Celda, varEnc): GoTo Vuelta 'MsgBox ("Error aqui"): bbb = "b": aaa = 1 + bbb: 'Aquí debería haber error porque, para que Previo tenga " SEG " debió pasar por otro canal del IF.
+        Case 6: Call RLog("Previo contiene Nkibon. Llamando BuscaSeg.", "Off"): varEnc = "NKIBON": mensaje = BuscaSeg(Entradas, Salidas, renglon, ya, Previo, Celda, varEnc): GoTo Vuelta
+        Case 7 To 11: Call RLog("Previo contiene variable geográfica. Llamando JuzgarCaso.", "Off"): mensaje = JuzgarCaso(Previo, Celda, Previo): GoTo Vuelta
+        Case 0: varEnc = "WOWOWOWOWOWKKK": MsgBox ("Error aqui"): bbb = "b": aaa = 1 + bbb: 'Aquí debería haber error porque, para que Previo sea <> "" ya debimos pasar esta prueba.
+        Case Else: MsgBox ("¿Qué pedo? NuevaBúsqueda Devolvió un valor no reconocido por Select Case.")
+    End Select
+
+    
+ElseIf ya = "" And Previo = "" Then
+    'De no haber nada que buscar, se registra el error
+    Open "C:\Users\franro04\Documents\VBA\ResultGeogr.csv" For Append As #2
+     'If Celda = 258 Then
+     '       MsgBox (Celda): bbb = "b": ccc = 1 + bbb
+     '   End If
+        Impresion = Celda & ",99,99,99,99,99,99,99,99,99,99,Previo:" & Previo & ",SEG encontrado.Sin variables geograficas" 'Código que significa ERROR
+        'LOG --------------------------------------------------------------
+Registro = ("ya = nada, Previo = nada. Registrando error. Impresion: " & Impresion)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+        Print #2, Impresion
+    Close #2
+    mensaje = "Error"
+    GoTo Vuelta:
+
+End If
+
+
+
+Vuelta:
+'LOG --------------------------------------------------------------
+Registro = ("Se devuelve mensaje:" & mensaje & ".Regresando a subfuncion anterior.")
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+'FALTA DEVOLVER VALOR
+NuevaBusqueda = mensaje
+End Function
+
+Function BuscaSeg(Entradas, Salidas, renglon, ya, Previo, Celda, variable)
+Dim regEx1 As New RegExp
+With regEx1
+    .Global = True
+    .MultiLine = True
+    .IgnoreCase = True
+    '.Pattern = patron1 'Dejado así a propósito
+End With
+
+'LOG --------------------------------------------------------------
+Registro = ("Iniciando BuscaSeg")
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+
+If ya = "" And (Previo <> "" And InStr(Previo, "NKIBON")) > 0 Then
+
+'LOG --------------------------------------------------------------
+Registro = ("Hubo Nkibon")
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+    'Saca el valor equivalente a SEG o a NKIBON y mételo en "ya"
+    'variable debe llevar un Trim() para que funcione la expresión regular
+    ya = SinComas(GEstado(Previo, "NKIBON"))
+    'LOG --------------------------------------------------------------
+Registro = ("Se llamó SinComas(GEstado(Previo, 'NKIBON')) Devolvio ya:" & ya)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+End If
+
+If ya = "" And (Previo <> "" And InStr(Previo, "SEG")) > 0 Then
+'LOG --------------------------------------------------------------
+Registro = ("Hubo SEG")
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+    ya = SinComas(GEstado(Previo, "SEG"))
+    'LOG --------------------------------------------------------------
+Registro = ("Se llamó SinComas(GEStado(Previo,'SEG')). Deolvió:" & ya)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+End If
+
+For b = 1 To renglon
+    regEx1.Pattern = "(.*)" & Trim(variable) & "(\s*)=(\D*)" & Trim(Str(ya)) & "(\D*)"
+    'MsgBox (regEx1.Pattern & " - " & Salidas(b))
+    Encontre = ""
+    If regEx1.Test(Salidas(b)) Then
+        'LOG --------------------------------------------------------------
+Registro = ("Dentro de ciclo se encontró coincidencia con expresión regular con variable " & Trim(variable) & " y valor " & Trim(Str(ya)))
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+        'MsgBox (Entradas(b))
+        Encontre = Entradas(b) 'Encontre = INPUT para generar SEG
+        Geogr = JuzgarCaso(Encontre, Celda, Previo) 'Buscar si hay datos geográficos. Se manda SEG sólo para escribir registro
+        'LOG --------------------------------------------------------------
+        Registro = ("Se llamó JuzgarCaso. Devolvió valor Len(Geogr): " & Len(Geogr))
+        Call RLog(Registro, "Off")
+        'LOG --------------------------------------------------------------
+        Select Case Len(Geogr) 'Si se devuelve una cadena, sí hay datos, sino no
+            Case 0: Open "C:\Users\franro04\Documents\VBA\ResultGeogr.csv" For Append As #2
+             'If Celda = 258 Then
+            'MsgBox (Celda): bbb = "b": 'ccc = 1 + bbb
+        'End If
+                    Impresion = Celda & ",99,99,99,99,99,99,99,99,99,99,Previo: " & Previo & ",Buscado en doble ciclo.Sin suerte.SEG:" & Trim(Str(ya)) 'Código que significa ERROR
+                    'LOG --------------------------------------------------------------
+                    Registro = ("Se registró un error con la siguiente impresión: " & Impresion)
+                    Call RLog(Registro, "Off")
+                    'LOG --------------------------------------------------------------
+                    Print #2, Impresion
+                    Close #2
+                    mensaje = "Error"
+                    GoTo Vuelta2:
+            
+            Case Else:
+                'LOG --------------------------------------------------------------
+                Registro = ("Se devuelve mensaje de OK")
+                Call RLog(Registro, "Off")
+                'LOG --------------------------------------------------------------
+                mensaje = "Ok" 'Devolver valor a la instancia que llama
+                GoTo Vuelta2:
+        End Select
+    End If
+
+Next b
+
+Vuelta2:
+'LOG --------------------------------------------------------------
+Registro = ("Saliendo de subfunción BuscaSeg. Mensaje a devolver: " & mensaje)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+BuscaSeg = mensaje
+End Function
+
+
+Function SEGenSEG(Stringo, SEG)
+'Buscar aquí el SEG anterior;
+'LOG --------------------------------------------------------------
+Registro = ("Corriendo SEGenSEG")
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+If InStr(Stringo, "SEG") > 0 Then
+    limpio = SinComas(GEstado(Stringo, "SEG")) 'Si hay un SEG en las Entradas, devolver su primer valor
+    GoTo Reportar:
+Else
+    limpio = ""
+End If
+
+Reportar:
+'LOG --------------------------------------------------------------
+Registro = ("Saliendo de SEGenSEG. Valor a reportar:" & limpio)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+SEGenSEG = limpio
+End Function
+
+Function SinComas(Texto)
+donde = InStr(Texto, ",")
+If donde > 0 Then
+    nueva = Left(Texto, donde - 1)
+Else
+    nueva = Texto
+End If
+
+'LOG --------------------------------------------------------------
+Registro = ("Funcion SinComas llamada. Devolviendo cadena:" & nueva)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+SinComas = nueva
+End Function
+
+Function JuzgarCaso(Stringo, Celda, Previo)
+'Determina si se encontraron variables geográficas en la cadena
+'De encontrarlas, graba un registro en el archivo csv.
+
+'LOG --------------------------------------------------------------
+Registro = ("Corriendo JuzgarCaso.")
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+
+SEG = Left(Celda, Len(Celda) - 1)
+
+HEstado = InStr(Stringo, "ESTADO")
+HMunic = InStr(Stringo, "MUNIC")
+HArea = InStr(Stringo, "AREA")
+HQuebra = InStr(Stringo, "QUEBRA")
+HTC2 = InStr(Stringo, "TC2")
+HPOP13 = InStr(Stringo, "POP13_MAIOR_140_MIL")
+HSplit = InStr(Stringo, "SPLIT ")
+HSplit33 = InStr(Stringo, "SPLIT_EXP_NEW_33")
+HDistrito = InStr(Stringo, "DISTR")
+HSubdistrito = InStr(Stringo, "SUBDISTR")
+HNfranq = InStr(Stringo, "NFRANQ")
+HNkibon = InStr(Stringo, "NKIBON")
+
+' ------------------AGREGAR AQUI TODAS LAS VARIABLES GEOGRÁFICAS --------------------
+
+Total = HEstado + HMunic + HArea + HQuebra + HDistrito + HSubdistrito
+
+'LOG --------------------------------------------------------------
+Registro = ("Total de palabras clave encontradas:" & Total)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+
+EST = "": MUN = "": Area = "": Quebra = "": TC2 = "": Pop13 = "": Splitt = "": Split33 = "": DISTRITO = "": SUBDISTRITO = "": Nfranq = "": NKIBON = ""
+If Total > 0 Then
+    If HEstado > 1 Then EST = Replace(GEstado(Stringo, "ESTADO"), ",", ";")
+    If HMunic > 1 Then MUN = Replace(GEstado(Stringo, "MUNIC"), ",", ";")
+    If HArea > 1 Then Area = Replace(GEstado(Stringo, "AREA"), ",", ";")
+    If HQuebra > 1 Then Quebra = Replace(GEstado(Stringo, "QUEBRA"), ",", ";")
+    If HTC2 > 1 Then TC2 = Replace(GEstado(Stringo, "TC2"), ",", ";")
+    If HPOP13 > 1 Then Pop13 = Replace(GEstado(Stringo, "POP13_MAIOR_140_MIL"), ",", ";")
+    If HSplit > 1 Then Splitt = Replace(GEstado(Stringo, "SPLIT "), ",", ";")
+    If HSplit33 > 1 Then Split33 = Replace(GEstado(Stringo, "SPLIT_EXP_NEW_33"), ",", ";")
+    If HDistrito > 1 Then DISTRITO = Replace(GEstado(Stringo, " DISTRITO"), ",", ";")
+    If HSubdistrito > 1 Then SUBDISTRITO = Replace(GEstado(Stringo, "SUBDISTRITO"), ",", ";")
+    If HNfranq > 1 Then Nfranq = Replace(GEstado(Stringo, "NFRANQ"), ",", ";")
+    If HNkibon > 1 Then NKIBON = Replace(GEstado(Stringo, "NKIBON"), ",", ";")
+    TODO = Replace(Trim(Stringo), ",", ";")
+    
+    ' ------------------AGREGAR AQUI TODAS LAS VARIABLES GEOGRÁFICAS --------------------
+    
+    Open "C:\Users\franro04\Documents\VBA\ResultGeogr.csv" For Append As #2
+        'If Celda = 258 Then
+        '    MsgBox (Celda): bbb = "b": 'ccc = 1 + bbb
+        'End If
+        Impresion = Celda & "," & EST & "," & MUN & "," & Area & "," & Quebra & "," & TC2 & "," & Pop13 & "," & Splitt & "," & Split33 & "," & DISTRITO & "," & SUBDISTRITO & "," & Nfranq & "," & NKIBON & "," & TODO & "," & Previo 'Carraige Return: vbCrLf
+        'LOG --------------------------------------------------------------
+    Registro = ("Generando registro SIN errores. Impresión: " & Impresion)
+    Call RLog(Registro, "Off")
+    'LOG --------------------------------------------------------------
+        Print #2, Impresion
+    Close #2
+    respuesta = Impresion
+Else
+    respuesta = ""
+End If
+
+'Si se devuelve una cadena, es la respuesta con los datos geográficos. De lo contrario hay que
+'utilizar la cadena dentro de Stringo y volver a buscar entre las Salidas.
+
+'LOG --------------------------------------------------------------
+Registro = ("Terminando subproceso JuzgarCaso. respuesta: " & respuesta)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+JuzgarCaso = respuesta
+End Function
+Function GEstado(Textos, CLAVE)
+'Esta función devuelve el valor (o valores) reportados para una variable específica, dentro de una
+'cadena de texto.
+'LOG --------------------------------------------------------------
+Registro = ("Iniciando GEstado. Buscando CLAVE: " & CLAVE)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+
+Dim result(10)
+
+partes = Split(Textos, CLAVE) 'Esta siempre aparecerá, porque ya checamos con un InStr
+prox = Left(partes(1), 9) 'Aquí no sabemos si hay NOT o IN, saco los dígitos más cercanos a la variable
+
+'Checar Signos de IGUAL =======
+donde = InStr(prox, "=")
+If donde > 0 Then 'Si hay signo de Igual próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - donde)
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del signo de igual (=) porque puede haber muchos
+    palabras = Split(despIgual, " ")
+    digitos = palabras(0)
+    GoTo Devolver
+End If
+
+'Checar EQ =======
+donde = InStr(prox, " EQ ")
+If donde > 0 Then 'Si hay signo de EQ próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - (donde + 3)) 'El 3 va por " EQ "
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del signo de igual (=) porque puede haber muchos
+    palabras = Split(despIgual, " ")
+    digitos = palabras(0)
+    GoTo Devolver
+End If
+
+'Checar NOTs ----------------------
+donde = InStr(prox, "NOT")
+If donde > 0 Then 'Si hay "NOT" próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - (donde + 7)) 'El 7 va por "NOT IN ("
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del paréntesis de cierre ")" porque puede haber varios
+    palabras = Split(despIgual, ")")
+    digitos = "-;" & palabras(0)
+    GoTo Devolver
+End If
+
+'Checar IN -------------------------
+donde = InStr(prox, "IN")
+If donde > 0 Then 'Si hay "IN" próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - (donde + 3)) 'El 3 va por "IN ("
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del paréntesis de cierre ")" porque puede haber varios
+    palabras = Split(despIgual, ")")
+    digitos = palabras(0)
+    GoTo Devolver
+End If
+
+'Checar NE ------------------------
+donde = InStr(prox, " NE ")
+If donde > 0 Then 'Si hay " NE " próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - (donde + 3)) 'El 3 va por " NE "
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del paréntesis de cierre ")" porque puede haber varios
+    palabras = Split(despIgual, " ")
+    digitos = "-;" & palabras(0)
+    GoTo Devolver
+End If
+
+MsgBox ("Error en el Gerador. Revisar!!!")
+b = "b"
+a = b + 1 'Se genera error a propósito con fines de Debugging
+
+Devolver:
+
+'LOG --------------------------------------------------------------
+Registro = ("Terminando GEStado. Devolviendo: " & digitos)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+GEstado = digitos
+End Function
+
+Sub probar()
+
+'PARA PROBAR PEDAZOS DE CODIGO
+
+Textos = "ELSE IF AREA=4 AND ESTADO EQ 35  "
+CLAVE = "ESTADO"
+
+partes = Split(Textos, CLAVE) 'Esta siempre aparecerá, porque ya checamos con un InStr
+prox = Left(partes(1), 9) 'Aquí no sabemos si hay NOT o IN, saco los dígitos más cercanos a la variable
+
+donde = InStr(prox, " EQ ")
+If donde > 0 Then 'Si hay signo de EQ próximo a la variable
+    despIgual = Right(partes(1), Len(partes(1)) - (donde + 3)) 'El 3 va por " EQ "
+    despIgual = Trim(despIgual)
+    'Tomar el primer valor después del signo de igual (=) porque puede haber muchos
+    palabras = Split(despIgual, " ")
+    digitos = palabras(0)
+End If
+MsgBox (digitos)
+
+
+End Sub
+
+
+
+Function Limpiar(Texto)
+
+
+    'Sirve para eliminar todos los comentarios y texto que no es código
+
+    limpio = InStr(Texto, "/*")
+    If limpio > 0 Then
+        Texto = Left(Texto, limpio - 1)
+    End If
+
+    aster1 = InStr(Texto, "*/")
+    If aster1 > 0 Then
+        Texto = Right(Texto, Len(Texto) - (aster1 + 1))
+    End If
+
+    aster = InStr(Texto, "*")
+    If aster > 0 Then
+        Texto = Left(Texto, aster - 1)
+    End If
+Limpiar = Texto
+End Function
+
+Function LasBuenas(Texto)
+'Esta función verifica si la cadena enviada contiene alguna de las variables útiles:
+'*Variables con información geográfica (ESTADO, AREA, MUNICIPIO, SPLIT, POP13, etc...)
+'*Variables traducibles a información geográfica (SEG, NKIBON).
+'
+
+'LOG --------------------------------------------------------------
+Registro = ("Corriendo función LasBuenas.")
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+Encontrado = 0
+
+If InStr(Texto, "ESTADO") Then Encontrado = 1
+If InStr(Texto, "AREA") Then Encontrado = 2
+If InStr(Texto, "MUNIC") Then Encontrado = 3
+If InStr(Texto, "SPLIT ") Then Encontrado = 4
+If InStr(Texto, " SEG ") Then Encontrado = 5
+If InStr(Texto, "NKIBON") Then Encontrado = 6
+If InStr(Texto, "SPLIT_EXP_NEW_33") Then Encontrado = 7
+If InStr(Texto, "POP13_MAIOR_140_MIL") Then Encontrado = 8
+If InStr(Texto, "QUEBRA") Then Encontrado = 9
+If InStr(Texto, "NFRANQ") Then Encontrado = 10
+If InStr(Texto, "DISTR") Then Encontrado = 11
+
+'Devuelve valor correspondiente
+
+'LOG --------------------------------------------------------------
+Registro = ("Terminando función las buenas. Devolviendo encontrado: " & Encontrado)
+Call RLog(Registro, "Off")
+'LOG --------------------------------------------------------------
+LasBuenas = Encontrado
+End Function
+
+Sub RLog(Vars, OnOff As String)
+If OnOff = "Off" Then GoTo Nada
+Open "C:\Users\franro04\Documents\VBA\Log.txt" For Append As #22
+    Print #22, Vars
+Close #22
+
+Nada:
+End Sub
+
+

@@ -1,0 +1,14 @@
+Sub probar()
+Dim regEx1 As New RegExp
+
+Stringo = " ;  a"
+With regEx1
+    .Global = True
+    .MultiLine = True
+    .IgnoreCase = True
+    .Pattern = "(.+);"
+End With
+
+If regEx1.Test(Stringo) Then MsgBox ("Si") Else MsgBox ("No")
+
+End Sub

@@ -1,0 +1,148 @@
+0
+6
+Sul
+ABCD
+ARACAJU
+Aracatuba
+Aracatuba PP SP
+Araraquara
+Baixada Fulminense
+Bangu
+Bauru
+BLUMENAU
+Brasilia
+Campo Gde
+Campo Gde RJ
+Campo Grande
+Campos
+Cascavel
+Centro Oeste
+CHAPECO
+Cid Belem
+Cid de Goiania
+CID JUIZ DE FORA
+Cid Manaus
+Cidade BH
+Cidade Campinas
+Cidade Fortaleza
+Cidade Ilheus
+Cidade Joao Pessoa
+Cidade Natal
+Cidade Recife
+Cidade Salvador
+Cidade São Luis
+Cidade SJR Preto
+Cidade Sorocaba
+Cidade Teresina
+CUIABA SEDE
+CURITIBA
+Depo Cosmopolis
+Depo Jundiai
+Depo Limeira
+Depo Mogi-Mirim
+Depo Piracicaba
+Depo Sul de Minas
+Divinopolis
+Duque de Caixas
+FARROUPILHA
+FLORIANOPOLIS
+Fq Florianopolis
+Fq Niteroi Cidade
+Franca
+FRANCA MG
+Franquia Niteroi
+Frco Beltrao
+Garanhuns
+Gov Valadares
+Grande POA
+Ilheus Interior
+Int Alagoas
+Int Ceara
+Int Fq Aracaju (Ba)
+Int Fq Brasilia
+INT FQ CUIABA
+Int Fq Go Est TO
+Int Fq Recife
+INT FQ VITORIA MG
+Int Itambi
+Int MA
+Int MG
+INT MT
+Int Norte Goiania
+Int PE Franq Fortaleza
+Int PI
+Int Sul Goiania
+Interior Franquia Santana
+Interior Londrina
+Interior PB
+Interior RN
+Interior SE
+Interior Sorocaba
+Iraja
+Itambi
+Itapetininga
+Itapeva
+Itu
+Jacarepagua
+JOINVILLE
+Juiz de Fora MG
+Leste
+LONDRINA
+Maceio
+Marilia
+Maringa
+Montes Claros
+Não Considerar
+Nova Iguacu (JF)
+Nova Iguacu Ar2
+Passo Fundo
+Passos MG
+Pelotas
+Periferia Fortaleza
+Periferia Recife
+Periferia Salvador
+Petrolina
+Petrolina (BA)
+Pinda
+Ponta Grossa
+PORTO ALEGRE
+Porto Real
+Portuaria
+Reg 1
+Reg 2
+Regmet Natal
+Regmet Recife
+Regmet São Luis
+Regmet Vitoria
+Resto Bahia
+Resto Campinas
+Resto Chapeco
+Resto Gde Goiania
+Resto Goias
+Resto Int MA
+Resto Int PI
+Resto MG
+Resto MS
+Resto PR
+Resto Vitoria
+Ribeirão Preto SP
+Santa Maria
+Santo Angelo
+São Gonzalo
+São Roque
+Sede Franquia Santana
+SJ Boa Vista MG
+SJ Boa Vista SP
+SJR Preto
+Spal Area 5
+Tatui
+Tijuca
+TRES CORAÇOES
+Tur Sul Goiania
+Tur To Goiana
+Uberlandia - Regiao I
+Uberlandia - Regiao II
+Uberlandia - Regiao III
+Uberlandia - Regiao IV
+Un R Preto 2
+Vit Conquista

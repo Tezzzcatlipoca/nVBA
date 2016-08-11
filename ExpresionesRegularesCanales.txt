@@ -1,0 +1,116 @@
+
+
+Sirve para encontrar los autoservicios:
+
+CualColumna = 6 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 4 'Dónde están los valores a ser evaluados
+ClaveBuscada = "Autoservicio" 'Poner aquí factor a ser insertado
+patron1 = "[^\+]askdjhaskjdh[^\+]" 'Aquí va la primera expresión regular
+patron2 = "^AS(.*)CK" 'Aquí va la segunda expresión regular
+patron3 = "[^\+]Conveniencia[^\+]" 'Aquí va la tercera expresión regular
+patron4 = "asdfsdf" 
+
+Para encontrar Tradicional hace falta dos ciclos:
+
+1er CICLO
+CualColumna = 6 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 4 'Dónde están los valores a ser evaluados
+ClaveBuscada = "Tradicional" 'Poner aquí factor a ser insertado
+patron1 = "radicional(\d | \D)*" 'Aquí va la primera expresión regular
+patron2 = "^TD (\d | \D)*" 'Aquí va la segunda expresión regular
+patron3 = "^TD.(\d | \D)*" 'Aquí va la tercera expresión regular
+patron4 = "RADICIONAL" 
+
+2do CICLO
+CualColumna = 6 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 4 'Dónde están los valores a ser evaluados
+ClaveBuscada = "Tradicional" 'Poner aquí factor a ser insertado
+patron1 = "^TRAD.(\d | \D)*" 'Aquí va la primera expresión regular
+patron2 = "^TRAD (\d | \D)*" 'Aquí va la segunda expresión regular
+patron3 = "^asdasdasd(\d | \D)*" 'Aquí va la tercera expresión regular
+patron4 = "aaasdasd"  
+
+
+Para Panaderías es necesario dos ciclos:
+
+1er CICLO
+CualColumna = 6 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 4 'Dónde están los valores a ser evaluados
+ClaveBuscada = "Padaria" 'Poner aquí factor a ser insertado
+patron1 = "^PADARIA(\d | \D)*" 'Aquí va la primera expresión regular
+patron2 = "^PAD (\d | \D)*" 'Aquí va la segunda expresión regular
+patron3 = "^PAD." 'Aquí va la tercera expresión regular
+patron4 = "^PD." 
+
+2do CICLO
+CualColumna = 6 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 4 'Dónde están los valores a ser evaluados
+ClaveBuscada = "Padaria" 'Poner aquí factor a ser insertado
+patron1 = "^PD.(\d | \D)*" 'Aquí va la primera expresión regular
+patron2 = "^PD (\d | \D)*" 'Aquí va la segunda expresión regular
+patron3 = "asdasdasd" 'Aquí va la tercera expresión regular
+patron4 = "lksjdfl" 
+
+Para bares y Horecas juntos (2 ciclos):
+1er CICLO
+CualColumna = 6 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 4 'Dónde están los valores a ser evaluados
+ClaveBuscada = "Bar" 'Poner aquí factor a ser insertado
+patron1 = "^BAR.(\d | \D)*" 'Aquí va la primera expresión regular
+patron2 = "^BAR (\d | \D)*" 'Aquí va la segunda expresión regular
+patron3 = "^HRCN(\d | \D)*" 'Aquí va la tercera expresión regular
+patron4 = "lksjdfl"  
+
+2do CICLO
+CualColumna = 6 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 4 'Dónde están los valores a ser evaluados
+ClaveBuscada = "Bar" 'Poner aquí factor a ser insertado
+patron1 = "^PMIX.(\d | \D)*" 'Aquí va la primera expresión regular
+patron2 = "^PMIX (\d | \D)*" 'Aquí va la segunda expresión regular
+patron3 = "^asdjhkas(\d | \D)*" 'Aquí va la tercera expresión regular
+patron4 = "lksjdfl"
+
+
+Para la mayoría de las cadenas funciona:
+
+CualColumna = 13 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 3 'Dónde están los valores a ser evaluados
+ClaveBuscada = "1" 'Poner aquí factor a ser insertado
+patron1 = "^[^(AS)](.*)CK(.*)" 'Aquí va la primera expresión regular
+patron2 = "^[^(AS)](.*)(\d)(.*)-(.*)(\d)(.*)" 'Aquí va la segunda expresión regular
+patron3 = "^kalsdkj(\d | \D)*" 'Aquí va la tercera expresión regular
+patron4 = "lksjdfl"
+
+Sirve para encontrar cadenas mezcladas con autoservicio:
+
+CualColumna = 6 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 4 'Dónde están los valores a ser evaluados
+ClaveBuscada = "Autoservicio" 'Poner aquí factor a ser insertado
+patron1 = "(\d)-(\d)" 'Aquí va la primera expresión regular
+patron2 = "^AS (\d | \D)*" 'Aquí va la segunda expresión regular
+patron3 = "onveniencia(\d | \D)*" 'Aquí va la tercera expresión regular
+patron4 = "ONVENIENCIA(\d | \D)*" 'Aquí v
+
+
+Para Cash & Carry:
+
+CualColumna = 6 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 4 'Dónde están los valores a ser evaluados
+ClaveBuscada = "Cash & Carry" 'Poner aquí factor a ser insertado
+patron1 = "ASH &(\d | \D)*" 'Aquí va la primera expresión regular
+patron2 = "^asdasda (\d | \D)*" 'Aquí va la segunda expresión regular
+patron3 = "^kalsdkj(\d | \D)*" 'Aquí va la tercera expresión regular
+patron4 = "lksjdfl" 'Aquí va la tercera expresión regular'  
+
+
+Para Farmacias:
+
+CualColumna = 6 'AJ=36 Dónde insertar los factores
+ColumnaALeer = 4 'Dónde están los valores a ser evaluados
+ClaveBuscada = "Farma" 'Poner aquí factor a ser insertado
+patron1 = "FARMA(\d | \D)*" 'Aquí va la primera expresión regular
+patron2 = "^asdasda (\d | \D)*" 'Aquí va la segunda expresión regular
+patron3 = "^kalsdkj(\d | \D)*" 'Aquí va la tercera expresión regular
+patron4 = "lksjdfl"
+
+

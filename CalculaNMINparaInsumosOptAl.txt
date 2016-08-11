@@ -1,0 +1,34 @@
+Sub CalculoNmin()
+
+ColumnaIn = 9 'Dónde leer los inputs (nmin) (I)
+ColumnaOut = 10 'Dónde escribir los outputs (insertar columna en J)
+
+Dim constantes(5 To 100) 'Existen 96 valores (para i=5 al 100) empezando en .2 y terminando en .1
+
+Open "C:\Users\franro04\Documents\VBA\K-nminReduc.txt" For Input As #1
+i = 5
+Do While Not EOF(1)
+        Input #1, constantes(i)
+        i = i + 1
+Loop
+Close #1
+
+LastD = Range("A1").End(xlDown).Row  '¿Cuál es el último valor de la tabla?
+
+For a = 2 To LastD 'Starting point is 2 in order to avoid overwriting the header
+        variable = Cells(a, ColumnaIn).Value
+        redondo = Round(variable)
+        If redondo < 6 Then
+            resultado = variable
+        ElseIf redondo > 100 Then
+            resultado = variable * (1 - constantes(100))
+        Else
+            resultado = variable * (1 - constantes(redondo))
+        End If
+        Cells(a, ColumnaOut).Value = Round(resultado)
+Next a
+
+'MsgBox (constantes(1))
+
+End Sub
+
